@@ -35,6 +35,7 @@ class StateManager:
             print(f"[state] Failed to load state ({e}), starting fresh.")
             self._data = self._empty()
 
+    # actually update the json by creating a temp file and replacing the current json
     def save(self) -> None:
         tmp = self._filepath + ".tmp"
         with open(tmp, "w") as f:
