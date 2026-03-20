@@ -21,7 +21,9 @@ class SwipeBot(commands.Bot):
     async def setup_hook(self):
         self.state.load()
         self.add_view(SwipeView())  # Register persistent view before any interactions arrive
-        await self.tree.sync()
+        guild = discord.Object(id=1414800603686768676)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
         self.expiry_task.start()
         print("[bot] Persistent view registered, slash commands synced.")
 
