@@ -121,6 +121,15 @@ class SwipeView(discord.ui.View):
         await handle_checkin(interaction, "Willage")
 
     @discord.ui.button(
+        label="I'm at DCT",
+        style=discord.ButtonStyle.green,
+        custom_id="swipe:checkin:DCT",
+        row=0,
+    )
+    async def checkin_dct(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await handle_checkin(interaction, "DCT")
+
+    @discord.ui.button(
         label="Ping Nav",
         style=discord.ButtonStyle.blurple,
         custom_id="swipe:ping:Nav",
@@ -137,6 +146,15 @@ class SwipeView(discord.ui.View):
     )
     async def ping_willage(self, interaction: discord.Interaction, button: discord.ui.Button):
         await handle_ping(interaction, "Willage")
+
+    @discord.ui.button(
+        label="Ping DCT",
+        style=discord.ButtonStyle.blurple,
+        custom_id="swipe:ping:DCT",
+        row=1,
+    )
+    async def ping_dct(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await handle_ping(interaction, "DCT")
 
     @discord.ui.button(
         label="Leave",

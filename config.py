@@ -1,4 +1,4 @@
-LOCATIONS = ["Nav", "Willage"]
+LOCATIONS = ["Nav", "Willage", "DCT"]
 CHECK_IN_DURATION_SECONDS = 3600  # 1 hour
 STATE_FILE = "swipe_state.json"
 PING_COOLDOWN_SECONDS = 60
