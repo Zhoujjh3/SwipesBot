@@ -46,16 +46,6 @@ bot = SwipeBot()
 @bot.tree.command(name="setup", description="Post the swipe panel in this channel (admin only)")
 @app_commands.default_permissions(administrator=True)
 async def setup(interaction: discord.Interaction):
-    # Remove existing panel if there is one
-    existing = bot.state.get_panel()
-    if existing:
-        try:
-            ch = bot.get_channel(existing["channel_id"]) or await bot.fetch_channel(existing["channel_id"])
-            old_msg = await ch.fetch_message(existing["message_id"])
-            await old_msg.delete()
-        except (discord.NotFound, discord.Forbidden):
-            pass
-
     await interaction.response.defer(ephemeral=True)
     panel_msg = await interaction.channel.send(embed=build_panel_embed(bot.state), view=SwipeView())
     bot.state.set_panel(interaction.channel_id, panel_msg.id)
