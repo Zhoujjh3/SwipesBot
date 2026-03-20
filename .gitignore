@@ -1,0 +1,5 @@
+.env
+.venv/
+swipe_state.json
+__pycache__/
+*.pyc
