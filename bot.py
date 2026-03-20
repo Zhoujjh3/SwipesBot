@@ -59,7 +59,20 @@ async def setup(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     panel_msg = await interaction.channel.send(embed=build_panel_embed(bot.state), view=SwipeView())
     bot.state.set_panel(interaction.channel_id, panel_msg.id)
-    await interaction.followup.send("Panel posted! Pin it so people can find it easily.", ephemeral=True)
+    try:
+        await panel_msg.pin()
+    except discord.Forbidden:
+        pass  # Missing Manage Messages permission; panel is still posted
+    await interaction.followup.send("Panel posted and pinned!", ephemeral=True)
+
+
+@bot.tree.command(name="setpingchannel", description="Set the channel where ping messages are sent (admin only)")
+@app_commands.default_permissions(administrator=True)
+async def setpingchannel(interaction: discord.Interaction, channel: discord.TextChannel):
+    bot.state.set_ping_channel_id(channel.id)
+    await interaction.response.send_message(
+        f"Ping messages will now be sent to {channel.mention}.", ephemeral=True
+    )
 
 
 if __name__ == "__main__":

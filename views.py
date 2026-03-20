@@ -84,9 +84,18 @@ async def handle_ping(interaction: discord.Interaction, location: str) -> None:
 
     state.record_ping(user.id, location)
     mentions = " ".join(f"<@{c['user_id']}>" for c in checkins)
-    await interaction.response.send_message(
-        f"{user.mention} is looking for a swipe at **{location}**: {mentions}"
-    )
+    content = f"{user.mention} is looking for a swipe at **{location}**: {mentions}"
+
+    ping_channel_id = state.get_ping_channel_id()
+    if ping_channel_id:
+        ping_channel = interaction.client.get_channel(ping_channel_id) or \
+                       await interaction.client.fetch_channel(ping_channel_id)
+        await ping_channel.send(content)
+        await interaction.response.send_message(
+            f"Pinged everyone at **{location}**!", ephemeral=True
+        )
+    else:
+        await interaction.response.send_message(content)
 
 
 class SwipeView(discord.ui.View):
@@ -128,3 +137,23 @@ class SwipeView(discord.ui.View):
     )
     async def ping_willage(self, interaction: discord.Interaction, button: discord.ui.Button):
         await handle_ping(interaction, "Willage")
+
+    @discord.ui.button(
+        label="Leave",
+        style=discord.ButtonStyle.red,
+        custom_id="swipe:leave",
+        row=2,
+    )
+    async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
+        state: StateManager = interaction.client.state
+        location = state.get_location(interaction.user.id)
+        if location:
+            state.check_out(interaction.user.id)
+            await interaction.response.send_message(
+                f"You've left **{location}**. See you next time!", ephemeral=True
+            )
+            await refresh_panel(interaction.client)
+        else:
+            await interaction.response.send_message(
+                "You're not checked in anywhere.", ephemeral=True
+            )

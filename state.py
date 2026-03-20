@@ -11,7 +11,7 @@ class StateManager:
         self._data: dict = self._empty()
 
     def _empty(self) -> dict:
-        return {"panel": None, "checkins": {}, "ping_cooldowns": {}}
+        return {"panel": None, "ping_channel_id": None, "checkins": {}, "ping_cooldowns": {}}
 
     # -------------------------------------------------------------------------
     # Persistence
@@ -29,6 +29,7 @@ class StateManager:
                 raise ValueError("bad schema")
             self._data = data
             self._data.setdefault("panel", None)
+            self._data.setdefault("ping_channel_id", None)
             self._data.setdefault("ping_cooldowns", {})
         except Exception as e:
             print(f"[state] Failed to load state ({e}), starting fresh.")
@@ -56,6 +57,17 @@ class StateManager:
 
     def clear_panel(self) -> None:
         self._data["panel"] = None
+        self.save()
+
+    # -------------------------------------------------------------------------
+    # Ping channel
+    # -------------------------------------------------------------------------
+
+    def get_ping_channel_id(self) -> int | None:
+        return self._data.get("ping_channel_id")
+
+    def set_ping_channel_id(self, channel_id: int) -> None:
+        self._data["ping_channel_id"] = channel_id
         self.save()
 
     # -------------------------------------------------------------------------
