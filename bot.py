@@ -1,4 +1,5 @@
 import os
+import random
 
 import discord
 from discord import app_commands
@@ -11,10 +12,23 @@ from views import SwipeView, build_panel_embed, refresh_panel
 
 load_dotenv()
 
+SARCASTIC_USERS = {677303470088257557, 756977692892463145}
+SARCASTIC_RESPONSES = [
+    "very funny",
+    "yeah pack it up buddy",
+    "nobody asked",
+    "sure bro",
+    "noted",
+    "and then what",
+    "ok?",
+    "whatever you say bro",
+]
+
 
 class SwipeBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
+        intents.message_content = True
         super().__init__(command_prefix="!", intents=intents)
         self.state = StateManager(STATE_FILE)
 
@@ -29,6 +43,14 @@ class SwipeBot(commands.Bot):
 
     async def on_ready(self):
         print(f"[bot] Logged in as {self.user} (ID: {self.user.id})")
+
+    async def on_message(self, message: discord.Message):
+        if message.author.bot:
+            return
+        log_channel_id = self.state.get_log_channel_id()
+        if message.author.id in SARCASTIC_USERS and message.channel.id == log_channel_id:
+            await message.channel.send(random.choice(SARCASTIC_RESPONSES))
+        await self.process_commands(message)
 
     @tasks.loop(seconds=EXPIRY_CHECK_INTERVAL_SECONDS)
     async def expiry_task(self):
