@@ -128,16 +128,37 @@ class RequestSwipesModal(discord.ui.Modal, title="Request Swipes"):
         required=False,
     )
 
+    def __init__(self, location: str):
+        super().__init__()
+        self.location = location
+
     async def on_submit(self, interaction: discord.Interaction):
         time_str = self.time.value.strip() if self.time.value else ""
         when = f"at {time_str}" if time_str else "now"
         await interaction.response.send_message(
-            f"Your request has been sent!", ephemeral=True
+            "Your request has been sent!", ephemeral=True
         )
         await send_log(
             interaction.client,
-            f"{interaction.user.mention} is requesting **{self.count.value}** swipe(s) — {when}."
+            f"{interaction.user.mention} is requesting **{self.count.value}** swipe(s) at **{self.location}** — {when}."
         )
+
+
+class LocationSelectView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+
+    @discord.ui.button(label="Nav", style=discord.ButtonStyle.green)
+    async def select_nav(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(RequestSwipesModal("Nav"))
+
+    @discord.ui.button(label="Willage", style=discord.ButtonStyle.green)
+    async def select_willage(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(RequestSwipesModal("Willage"))
+
+    @discord.ui.button(label="DCT", style=discord.ButtonStyle.green)
+    async def select_dct(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(RequestSwipesModal("DCT"))
 
 
 class SwipeView(discord.ui.View):
@@ -205,7 +226,11 @@ class SwipeView(discord.ui.View):
         row=2,
     )
     async def request_swipes(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(RequestSwipesModal())
+        await interaction.response.send_message(
+            "Which dining hall do you need a swipe at?",
+            view=LocationSelectView(),
+            ephemeral=True,
+        )
 
     @discord.ui.button(
         label="Leave",
