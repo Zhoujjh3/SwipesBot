@@ -47,6 +47,17 @@ async def refresh_panel(bot: discord.Client) -> None:
         print(f"[refresh_panel] Error: {e}")
 
 
+async def send_log(bot: discord.Client, message: str) -> None:
+    log_channel_id = bot.state.get_log_channel_id()
+    if not log_channel_id:
+        return
+    try:
+        channel = bot.get_channel(log_channel_id) or await bot.fetch_channel(log_channel_id)
+        await channel.send(message)
+    except Exception as e:
+        print(f"[send_log] Error: {e}")
+
+
 async def handle_checkin(interaction: discord.Interaction, location: str) -> None:
     state: StateManager = interaction.client.state
     user = interaction.user
@@ -55,12 +66,17 @@ async def handle_checkin(interaction: discord.Interaction, location: str) -> Non
     if result == "already_here":
         state.check_out(user.id)
         msg = f"You've checked out of **{location}**."
+        await interaction.response.send_message(msg, ephemeral=True)
+        await send_log(interaction.client, f"{user.mention} left **{location}**.")
     elif result == "switched":
         msg = f"Switched to **{location}**! You'll auto-expire in 1 hour."
+        await interaction.response.send_message(msg, ephemeral=True)
+        await send_log(interaction.client, f"{user.mention} checked in at **{location}**.")
     else:
         msg = f"Checked in to **{location}**! You'll auto-expire in 1 hour."
+        await interaction.response.send_message(msg, ephemeral=True)
+        await send_log(interaction.client, f"{user.mention} checked in at **{location}**.")
 
-    await interaction.response.send_message(msg, ephemeral=True)
     await refresh_panel(interaction.client)
 
 
@@ -170,6 +186,7 @@ class SwipeView(discord.ui.View):
             await interaction.response.send_message(
                 f"You've left **{location}**. See you next time!", ephemeral=True
             )
+            await send_log(interaction.client, f"{interaction.user.mention} left **{location}**.")
             await refresh_panel(interaction.client)
         else:
             await interaction.response.send_message(

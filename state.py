@@ -11,7 +11,7 @@ class StateManager:
         self._data: dict = self._empty()
 
     def _empty(self) -> dict:
-        return {"panel": None, "ping_channel_id": None, "checkins": {}, "ping_cooldowns": {}}
+        return {"panel": None, "ping_channel_id": None, "log_channel_id": None, "checkins": {}, "ping_cooldowns": {}}
 
     # -------------------------------------------------------------------------
     # Persistence
@@ -30,6 +30,7 @@ class StateManager:
             self._data = data
             self._data.setdefault("panel", None)
             self._data.setdefault("ping_channel_id", None)
+            self._data.setdefault("log_channel_id", None)
             self._data.setdefault("ping_cooldowns", {})
         except Exception as e:
             print(f"[state] Failed to load state ({e}), starting fresh.")
@@ -69,6 +70,13 @@ class StateManager:
 
     def set_ping_channel_id(self, channel_id: int) -> None:
         self._data["ping_channel_id"] = channel_id
+        self.save()
+
+    def get_log_channel_id(self) -> int | None:
+        return self._data.get("log_channel_id")
+
+    def set_log_channel_id(self, channel_id: int) -> None:
+        self._data["log_channel_id"] = channel_id
         self.save()
 
     # -------------------------------------------------------------------------

@@ -63,6 +63,15 @@ async def setpingchannel(interaction: discord.Interaction, channel: discord.Text
     )
 
 
+@bot.tree.command(name="setlogchannel", description="Set the channel where check-in/leave activity is logged (admin only)")
+@app_commands.default_permissions(administrator=True)
+async def setlogchannel(interaction: discord.Interaction, channel: discord.TextChannel):
+    bot.state.set_log_channel_id(channel.id)
+    await interaction.response.send_message(
+        f"Activity will now be logged in {channel.mention}.", ephemeral=True
+    )
+
+
 if __name__ == "__main__":
     token = os.getenv("DISCORD_TOKEN")
     if not token:
