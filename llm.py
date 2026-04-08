@@ -1,0 +1,56 @@
+import os
+
+import aiohttp
+
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "openai/gpt-oss-120b"
+
+SYSTEM_PROMPT = (
+    "You are SwipesBot, a sarcastic assistant for a college dining hall Discord server. "
+    "Keep all responses to 1-2 sentences. Be dry and witty, not mean or offensive. "
+    "You know about three dining halls: Nav, Willage, and DCT. "
+    "When directly mentioned, answer naturally but with a sarcastic edge. "
+    "When monitoring messages (not a direct mention), only respond if the message is "
+    "a complaint, dramatic statement, dumb question, or something funny. "
+    "If the message is boring, neutral, or not worth a quip, reply with exactly: IGNORE"
+)
+
+
+async def get_llm_response(user_message: str, is_mention: bool) -> str | None:
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        print("[llm] OPENROUTER_API_KEY not set")
+        return None
+
+    if is_mention:
+        prompt = f"A user directly mentioned you. Respond sarcastically. Message: {user_message}"
+    else:
+        prompt = (
+            f"A user sent this message in the server. "
+            f"Reply with IGNORE if it's not worth a quip. Message: {user_message}"
+        )
+
+    payload = {
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        "max_tokens": 100,
+    }
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(OPENROUTER_URL, json=payload, headers=headers) as resp:
+                if resp.status != 200:
+                    print(f"[llm] API error {resp.status}: {await resp.text()}")
+                    return None
+                data = await resp.json()
+                return data["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        print(f"[llm] Request failed: {e}")
+        return None
