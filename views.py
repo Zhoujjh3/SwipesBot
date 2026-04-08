@@ -114,6 +114,32 @@ async def handle_ping(interaction: discord.Interaction, location: str) -> None:
         await interaction.response.send_message(content)
 
 
+class RequestSwipesModal(discord.ui.Modal, title="Request Swipes"):
+    count = discord.ui.TextInput(
+        label="How many swipes do you need?",
+        placeholder="e.g. 1",
+        min_length=1,
+        max_length=2,
+        required=True,
+    )
+    time = discord.ui.TextInput(
+        label="What time? (optional)",
+        placeholder="e.g. 6:30pm — leave blank for now",
+        required=False,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        time_str = self.time.value.strip() if self.time.value else ""
+        when = f"at {time_str}" if time_str else "now"
+        await interaction.response.send_message(
+            f"Your request has been sent!", ephemeral=True
+        )
+        await send_log(
+            interaction.client,
+            f"{interaction.user.mention} is requesting **{self.count.value}** swipe(s) — {when}."
+        )
+
+
 class SwipeView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)  # Required for persistence across restarts
@@ -171,6 +197,15 @@ class SwipeView(discord.ui.View):
     )
     async def ping_dct(self, interaction: discord.Interaction, button: discord.ui.Button):
         await handle_ping(interaction, "DCT")
+
+    @discord.ui.button(
+        label="Request Swipes",
+        style=discord.ButtonStyle.gray,
+        custom_id="swipe:request",
+        row=2,
+    )
+    async def request_swipes(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(RequestSwipesModal())
 
     @discord.ui.button(
         label="Leave",
