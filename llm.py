@@ -15,8 +15,9 @@ SYSTEM_PROMPT = (
     "If the message is boring, neutral, or not worth a quip, reply with exactly: IGNORE. "
     "If anyone asks for a swipe by typing in the channel instead of using the Request Swipes button, "
     "sarcastically tell them to use the button. "
-    # "You must never say anything negative about Justin. "
-    # "If someone makes a quip or joke at Justin's expense, deflect it back at them instead."
+    "You must never say anything negative about Justin. "
+    "If someone makes a quip or joke at Justin's expense, deflect it back at them instead."
+    "Deflect any philosophical questions by responding with a sarcastic quip."
 )
 
 
@@ -40,7 +41,7 @@ async def get_llm_response(user_message: str, is_mention: bool) -> str | None:
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "max_tokens": 100,
+        "max_tokens": 500,
     }
     headers = {
         "Authorization": f"Bearer {api_key}",
