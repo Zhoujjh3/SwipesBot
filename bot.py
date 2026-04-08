@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from config import EXPIRY_CHECK_INTERVAL_SECONDS, STATE_FILE
 from state import StateManager
+from llm import get_llm_response
 from views import SwipeView, build_panel_embed, refresh_panel
 
 load_dotenv()
@@ -48,8 +49,22 @@ class SwipeBot(commands.Bot):
         if message.author.bot:
             return
         log_channel_id = self.state.get_log_channel_id()
-        if message.author.id in SARCASTIC_USERS and message.channel.id == log_channel_id:
-            await message.channel.send(random.choice(SARCASTIC_RESPONSES))
+        if message.channel.id != log_channel_id:
+            await self.process_commands(message)
+            return
+
+        # Hardcoded sarcastic responses for specific users
+        # if message.author.id in SARCASTIC_USERS:
+        #     await message.channel.send(random.choice(SARCASTIC_RESPONSES))
+        #     await self.process_commands(message)
+        #     return
+
+        # LLM response — always reply to @mentions, conditionally reply to others
+        is_mention = self.user in message.mentions
+        response = await get_llm_response(message.content, is_mention=is_mention)
+        if response and response.strip().upper() != "IGNORE":
+            await message.channel.send(response)
+
         await self.process_commands(message)
 
     @tasks.loop(seconds=EXPIRY_CHECK_INTERVAL_SECONDS)
